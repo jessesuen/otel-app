@@ -28,7 +28,7 @@ all: build
 
 .PHONY: build
 build:
-	CGO_ENABLED=0 go build
+	CGO_ENABLED=0 orchestrion go build
 
 .PHONY: image
 image:
@@ -42,7 +42,7 @@ image:
 
 .PHONY: run
 run:
-	go run main.go
+	go run .
 
 .PHONY: lint
 lint:

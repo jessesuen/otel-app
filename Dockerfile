@@ -2,7 +2,7 @@ FROM golang:1.26.0 AS build
 
 WORKDIR /go/src/app
 COPY go.mod go.sum ./
-RUN go mod download
+RUN go mod download && go install github.com/DataDog/orchestrion@v1.9.0
 COPY . .
 RUN make
 
