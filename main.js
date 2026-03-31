@@ -288,8 +288,8 @@ class Pixel {
 class Graph {
 	constructor(c) {
 		this.container = document.getElementById("graph");
-		this.cur = 0;
 		this.buckets = [];
+		this.liveBar = null;
 		this.resize(c);
 		setInterval(this.tick.bind(this), BUCKET_SECONDS * 1000)
 	}
@@ -300,6 +300,7 @@ class Graph {
 			return;
 		}
 		curBucket.drip(color, error);
+		this.updateLiveBar();
 	} 
 
 	resize(col) {
@@ -317,12 +318,20 @@ class Graph {
 				this.container.prepend(bar);
 			}
 		}
+		this.liveBar = this.container.lastChild;
+	}
+
+	updateLiveBar() {
+		const curBucket = this.buckets[this.buckets.length-1];
+		this.liveBar.innerHTML = curBucket.full().innerHTML;
 	}
 
 	tick() {
 		this.container.removeChild(this.container.firstChild);
-		const el = this.buckets[this.buckets.length-1].full();
-		this.container.append(el);
+		const newBar = document.createElement("div");
+		newBar.classList.add('bar');
+		this.container.append(newBar);
+		this.liveBar = newBar;
 		this.buckets.shift();
 		this.buckets.push(new Bucket());
 	}

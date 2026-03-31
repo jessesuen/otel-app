@@ -185,6 +185,7 @@ h1 {
   height: 105px;
   display: flex;
   flex-direction: column;
+  justify-content: flex-end;
   margin-right: 5px;
   background-color: #272727;
 }
