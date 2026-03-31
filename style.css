@@ -20,21 +20,26 @@ h1 {
 }
 
 .header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
   max-width: 700px;
   margin: 0 auto;
   margin-bottom: 1em;
 }
 
 .controls {
-  display: flex;
-  flex-wrap: wrap;
-  width: 100%;
-  justify-content: center;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+  width: min(100%, 1040px);
+  margin: 0 auto;
+  column-gap: 20px;
 }
 
 .control {
-  min-width: 500px;
-  width: 500px;
+  min-width: 0;
+  width: 100%;
   margin-bottom: 0.5em;
   margin-right: 20px;
 }
@@ -55,19 +60,45 @@ h1 {
   padding: 9px 12px;
   cursor: pointer;
 }
-.button--start {
-  color: rgba(0, 0, 0, 0.6);
+.toggle {
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+}
+.toggle input {
+  display: none;
+}
+.toggle__track {
+  display: block;
+  width: 51px;
+  height: 31px;
+  border-radius: 15.5px;
+  background-color: #3a3a3a;
+  transition: background-color 0.2s;
+  position: relative;
+}
+.toggle input:checked ~ .toggle__track {
   background-color: #3DFB60;
 }
-.button--stop {
-  background-color: #FB3D3D;
+.toggle__thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 27px;
+  height: 27px;
+  border-radius: 50%;
+  background: white;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.4);
+  transition: transform 0.2s;
 }
-.button--selected {
-  box-shadow: inset 0 0 0 3px rgba(0, 0, 0, 0.3);
+.toggle input:checked ~ .toggle__track .toggle__thumb {
+  transform: translateX(20px);
 }
-.button--resize {
-  background-color: #FB823D;
-  margin-right: 7px;
+.toggle__label {
+  margin-right: 10px;
+  color: #a0a0a0;
+  font-size: 14px;
+  vertical-align: middle;
 }
 
 .orange {
@@ -76,6 +107,12 @@ h1 {
 
 .white {
   color: white;
+}
+
+.colors-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .colors {

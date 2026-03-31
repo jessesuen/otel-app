@@ -5,28 +5,30 @@
     <link rel="stylesheet" href="style.css" type="text/css" />
   </head>
   <body>
-    <div class="header spread">
+    <div class="header">
         <img src="logo.png" class="logo" />
         <h1>ARGO ROLLOUTS <span class="orange">DEMO</span></h1>
-        <div class="flex">
-          <div class="button button--resize" id="resize">FIT</div>
-        </div>
     </div>
     <div class="controls">
-      <div class="control spread">
-        <div>COLOR</div>
-        <div class="colors" id="colors"></div>
+      <div class="control">
+        <div class="colors-row">
+          <div>COLOR</div>
+          <div class="colors" id="colors"></div>
+        </div>
       </div>
-      <div class="control spread">
-        <div class="button button--start">START</div>
-        <div class="button button--stop">STOP</div>
+      <div class="control">
+        <label class="toggle">
+          <input type="checkbox" id="toggle-input" checked>
+          <span class="toggle__label">TRAFFIC</span>
+          <span class="toggle__track"><span class="toggle__thumb"></span></span>
+        </label>
       </div>
       <div class="control">
         <div class="control spread">
           <div>LATENCY</div>
           <div class="white" id="latency-label">0.0s</div>
         </div>
-        <input type="range" min="0" max="5" value="0" class="slider" id="latency" step="0.1">
+        <input type="range" min="0" max="3" value="0" class="slider" id="latency" step="0.1">
       </div>
       <div class="control">
         <div class="control spread">

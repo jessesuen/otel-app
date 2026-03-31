@@ -1,7 +1,7 @@
 const MIN_ROWS = 4;
 const MAX_ROWS = 14;
 
-const REFRESH_INTERVAL_MS = 20;
+const REFRESH_INTERVAL_MS = 40;
 
 const PIXEL_TIMEOUT = 4000;
 const PIXEL_SIZE = 35;
@@ -16,11 +16,8 @@ class App {
 		this.colors = new Colors();
 		this.interval = null;
 
-		this.startButton = new Button("start", this.start.bind(this));
-		this.stopButton = new Button("stop", this.stop.bind(this));
-
-		this.resizeButton = new Button("resize", this.resize.bind(this));
-		this.resizeButton.hide();
+		this.toggleInput = document.getElementById('toggle-input');
+		this.toggleInput.addEventListener('change', this.toggle.bind(this));
 
 		const c = this.getColumns();
 		this.columns = c;
@@ -30,18 +27,6 @@ class App {
 		this.graph = new Graph(c);
 	}
 
-	stateChange() {
-		if (document.hidden) {
-			this.stop();
-		} else {
-			this.start();
-		}
-	}
-
-	resized() {
-		this.resizeButton.show();
-	}
-
 	resize() {
 		const c = this.getColumns();
 		this.columns = c;
@@ -49,24 +34,16 @@ class App {
 		this.rows = r;
 		this.grid.resize(r, c);
 		this.graph.resize(c);
-		this.resizeButton.hide();
 	}
 
-	start() {
-		this.interval = setInterval(() => {
-			this.load();
-		}, REFRESH_INTERVAL_MS);
-		this.on = true;
-		this.startButton.select();
-		this.stopButton.deselect();
-	}	
-
-	stop() {
-		clearInterval(this.interval);
-		this.on = false;
-		this.startButton.deselect();
-		this.stopButton.select();
-		window.stop()
+	toggle() {
+		if (this.toggleInput.checked) {
+			this.interval = setInterval(() => this.load(), REFRESH_INTERVAL_MS);
+			this.on = true;
+		} else {
+			clearInterval(this.interval);
+			this.on = false;
+		}
 	}
 
 	req() {
@@ -390,6 +367,5 @@ class Bucket {
 }
 
 const app = new App();
-app.start();
-window.addEventListener("resize", app.resized.bind(app));
-document.addEventListener("visibilitychange", app.stateChange.bind(app));
+app.toggle();
+window.addEventListener("resize", app.resize.bind(app));
