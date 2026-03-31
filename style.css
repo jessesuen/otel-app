@@ -217,5 +217,8 @@ h1 {
 .colors__green, .pixel__green, .graph__green {
   background-color: #3DFB78;
 }
+.colors__white, .pixel__white, .graph__white {
+  background-color: #FFFFFF;
+}
 
 /*# sourceMappingURL=style.css.map */

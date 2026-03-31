@@ -41,6 +41,7 @@ var (
 		"green",
 		"blue",
 		"purple",
+		"white",
 	}
 	envLatency   float64
 	envErrorRate int

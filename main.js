@@ -9,7 +9,7 @@ const PIXEL_GUTTER = 5;
 
 const BUCKET_SECONDS = 5;
 
-const COLORS = ["red", "orange", "yellow", "green", "blue", "purple"];
+const COLORS = ["red", "orange", "yellow", "green", "blue", "purple", "white"];
 
 class App {
 	constructor() {
