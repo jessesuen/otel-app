@@ -15,6 +15,7 @@ class App {
 	constructor() {
 		this.colors = new Colors();
 		this.interval = null;
+		this.inFlight = 0;
 
 		this.toggleInput = document.getElementById('toggle-input');
 		this.toggleInput.addEventListener('change', this.toggle.bind(this));
@@ -58,7 +59,11 @@ class App {
 		return JSON.stringify(values);
 	}
 
-	load(body) {
+	load() {
+		if (this.inFlight >= 6) {
+			return;
+		}
+		this.inFlight++;
 	    fetch('./color', {
 	        method: "POST",
 	        body: this.req(),
@@ -71,7 +76,10 @@ class App {
 	    	this.colors.add(color);
 	        this.grid.light(this.randCoord(), color, error);
 	        this.graph.record(color, error);
-	    }).bind(this));
+	    }).bind(this))
+	    .finally(() => {
+	    	this.inFlight--;
+	    });
 	}
 
 	randCoord() {
@@ -85,7 +93,12 @@ class App {
 	}
 
 	getRows() {
-		var rows = Math.round(window.innerHeight / (PIXEL_SIZE + PIXEL_GUTTER)) - 10;
+		const gridTop = document.getElementById('grid').getBoundingClientRect().top;
+		const gridMarginBottom = 32; // 2em
+		const graphH = 105; // .bar height
+		const bodyPaddingBottom = 15;
+		const available = window.innerHeight - gridTop - gridMarginBottom - graphH - bodyPaddingBottom;
+		var rows = Math.round(available / (PIXEL_SIZE + PIXEL_GUTTER));
 		rows = Math.min(rows, MAX_ROWS);
 		rows = Math.max(rows, MIN_ROWS);
 		return rows;

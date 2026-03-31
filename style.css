@@ -4,6 +4,7 @@ body {
   color: #a0a0a0;
   background-color: #010101;
   font-family: Menlo;
+  overflow-x: auto;
 }
 
 h1 {
@@ -31,8 +32,8 @@ h1 {
 
 .controls {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
-  width: min(100%, 1040px);
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  width: min(100%, 640px);
   margin: 0 auto;
   column-gap: 20px;
 }
