@@ -114,7 +114,7 @@ func main() {
 	flag.Parse()
 
 	router := http.NewServeMux()
-	router.Handle("/", http.StripPrefix("/", http.FileServer(http.Dir("./"))))
+	router.Handle("/", http.StripPrefix("/", http.FileServer(http.Dir("./ui"))))
 	router.Handle("/color", instrumentHandler("color", http.HandlerFunc(getColor)))
 	router.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
