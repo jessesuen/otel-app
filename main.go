@@ -11,7 +11,6 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"runtime"
 	"strconv"
 	"strings"
 	"syscall"
@@ -107,12 +106,10 @@ func main() {
 	var (
 		listenAddr       string
 		terminationDelay int
-		numCPUBurn       string
 		tls              bool
 	)
 	flag.StringVar(&listenAddr, "listen-addr", ":8080", "server listen address")
 	flag.IntVar(&terminationDelay, "termination-delay", defaultTerminationDelay, "termination delay in seconds")
-	flag.StringVar(&numCPUBurn, "cpu-burn", "", "burn specified number of cpus (number or 'all')")
 	flag.BoolVar(&tls, "tls", false, "Enable TLS (with self-signed certificate)")
 	flag.Parse()
 
@@ -160,7 +157,6 @@ func main() {
 		close(done)
 	}()
 
-	cpuBurn(done, numCPUBurn)
 	log.Printf("Started server on %s", listenAddr)
 	var err error
 	if tls {
@@ -248,34 +244,3 @@ func randomColor() string {
 	return colors[rand.Int()%len(colors)]
 }
 
-func cpuBurn(done <-chan bool, numCPUBurn string) {
-	if numCPUBurn == "" {
-		return
-	}
-	var numCPU int
-	if numCPUBurn == "all" {
-		numCPU = runtime.NumCPU()
-	} else {
-		num, err := strconv.Atoi(numCPUBurn)
-		if err != nil {
-			log.Fatal(err)
-		}
-		numCPU = num
-	}
-	log.Printf("Burning %d CPUs", numCPU)
-	noop := func() {}
-	for i := 0; i < numCPU; i++ {
-		go func(cpu int) {
-			log.Printf("Burning CPU #%d", cpu)
-			for {
-				select {
-				case <-done:
-					log.Printf("Stopped CPU burn #%d", cpu)
-					return
-				default:
-					noop()
-				}
-			}
-		}(i)
-	}
-}
