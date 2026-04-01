@@ -151,27 +151,8 @@ h1 {
 }
 
 .grid {
-  margin: 0 auto;
-  width: max-content;
-  margin-top: 2em;
-  margin-bottom: 2em;
-}
-
-.row {
-  display: flex;
-  margin-bottom: 5px;
-}
-
-.pixel {
-  width: 35px;
-  height: 35px;
-  margin-right: 5px;
-  background-color: #272727;
-  transition: background 0.2s ease;
-  box-shadow: none;
-}
-.pixel--error {
-  box-shadow: inset 0 0 0 3px #9c0303;
+  display: block;
+  margin: 2em auto;
 }
 
 .graph {
@@ -197,28 +178,28 @@ h1 {
   box-shadow: inset 0 3px 0 0 #9c0303, inset 0 -3px 0 0 #9c0303;
 }
 
-.colors__selected, .pixel__selected, .graph__selected {
+.colors__selected, .graph__selected {
   box-shadow: inset 0 0 0 3px rgba(0, 0, 0, 0.5);
 }
-.colors__yellow, .colors__on, .pixel__yellow, .pixel__on, .graph__yellow, .graph__on {
+.colors__yellow, .colors__on, .graph__yellow, .graph__on {
   background-color: #C9FF0D;
 }
-.colors__blue, .pixel__blue, .graph__blue {
+.colors__blue, .graph__blue {
   background-color: #0B9AFF;
 }
-.colors__orange, .pixel__orange, .graph__orange {
+.colors__orange, .graph__orange {
   background-color: #FB823D;
 }
-.colors__red, .pixel__red, .graph__red {
+.colors__red, .graph__red {
   background-color: #FB3D3D;
 }
-.colors__purple, .pixel__purple, .graph__purple {
+.colors__purple, .graph__purple {
   background-color: #6D3DFB;
 }
-.colors__green, .pixel__green, .graph__green {
+.colors__green, .graph__green {
   background-color: #3DFB78;
 }
-.colors__white, .pixel__white, .graph__white {
+.colors__white, .graph__white {
   background-color: #FFFFFF;
 }
 

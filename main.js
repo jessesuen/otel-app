@@ -1,15 +1,34 @@
 const MIN_ROWS = 4;
 const MAX_ROWS = 14;
 
-const REFRESH_INTERVAL_MS = 40;
+const REFRESH_INTERVAL_MS = 50;
 
-const PIXEL_TIMEOUT = 4000;
+const PIXEL_TIMEOUT = 2000;
 const PIXEL_SIZE = 35;
 const PIXEL_GUTTER = 5;
 
 const BUCKET_SECONDS = 5;
 
 const COLORS = ["red", "orange", "yellow", "green", "blue", "purple", "white"];
+
+const PIXEL_COLORS = {
+	red:    '#FB3D3D',
+	orange: '#FB823D',
+	yellow: '#C9FF0D',
+	green:  '#3DFB78',
+	blue:   '#0B9AFF',
+	purple: '#6D3DFB',
+	white:  '#FFFFFF',
+};
+const PIXEL_BG = '#272727';
+const PIXEL_ERROR_COLOR = '#9c0303';
+const PIXEL_FADE_MS = 500;
+
+function lerpColor(a, b, t) {
+	const ar = parseInt(a.slice(1, 3), 16), ag = parseInt(a.slice(3, 5), 16), ab = parseInt(a.slice(5, 7), 16);
+	const br = parseInt(b.slice(1, 3), 16), bg = parseInt(b.slice(3, 5), 16), bb = parseInt(b.slice(5, 7), 16);
+	return `rgb(${Math.round(ar+(br-ar)*t)},${Math.round(ag+(bg-ag)*t)},${Math.round(ab+(bb-ab)*t)})`;
+}
 
 class App {
 	constructor() {
@@ -74,8 +93,10 @@ class App {
 	    	const {color} = res;
 	    	const error = res.res.status === 500;
 	    	this.colors.add(color);
-	        this.grid.light(this.randCoord(), color, error);
-	        this.graph.record(color, error);
+	    	if (!document.hidden) {
+		        this.grid.light(this.randCoord(), color, error);
+		        this.graph.record(color, error);
+		    }
 	    }).bind(this))
 	    .finally(() => {
 	    	this.inFlight--;
@@ -221,67 +242,67 @@ class Color {
 
 class Grid {
 	constructor(r, c) {
-		this.container = document.getElementById("grid");
+		this.canvas = document.getElementById('grid');
+		this.ctx = this.canvas.getContext('2d');
+		this.pixels = [];
+		this.activePixels = new Set();
 		this.resize(r, c);
+		requestAnimationFrame(this.draw.bind(this));
 	}
 
-	resize(rows, col) {
-		this.container.innerHTML = null;
-		this.pixels = [];
-		for (const r of Array(rows).keys()) {
-			this.pixels.push([]);
-			const row = document.createElement("div");
-			row.className = "row";
-			row.id = `row-${r}`
-			for (const c of Array(col).keys()) {
-				const px = new Pixel(r, c);
-				this.pixels[r][c] = px;
-				row.appendChild(px.container);
+	resize(rows, cols) {
+		this.rows = rows;
+		this.cols = cols;
+		this.canvas.width = cols * (PIXEL_SIZE + PIXEL_GUTTER) - PIXEL_GUTTER;
+		this.canvas.height = rows * (PIXEL_SIZE + PIXEL_GUTTER) - PIXEL_GUTTER;
+		this.activePixels.clear();
+		this.pixels = Array.from({length: rows}, (_, r) =>
+			Array.from({length: cols}, (_, c) => ({ row: r, col: c, color: null, error: false, litAt: 0 }))
+		);
+		// Draw initial background for all pixels
+		this.ctx.fillStyle = PIXEL_BG;
+		for (let r = 0; r < rows; r++) {
+			for (let c = 0; c < cols; c++) {
+				this.ctx.fillRect(c * (PIXEL_SIZE + PIXEL_GUTTER), r * (PIXEL_SIZE + PIXEL_GUTTER), PIXEL_SIZE, PIXEL_SIZE);
 			}
-			this.container.appendChild(row);
-		}		
+		}
 	}
 
 	light(coord, color, error) {
-		let [row, col] = coord;
-		let px = false;
-		if (this.pixels[row]) {
+		const [row, col] = coord;
+		if (this.pixels[row]?.[col] !== undefined) {
 			const px = this.pixels[row][col];
-			if (px) {
-				px.light(color, error, PIXEL_TIMEOUT);
+			px.color = color;
+			px.error = error;
+			px.litAt = Date.now();
+			this.activePixels.add(px);
+		}
+	}
+
+	draw() {
+		const ctx = this.ctx;
+		const now = Date.now();
+		for (const px of this.activePixels) {
+			const age = now - px.litAt;
+			const x = px.col * (PIXEL_SIZE + PIXEL_GUTTER);
+			const y = px.row * (PIXEL_SIZE + PIXEL_GUTTER);
+			if (age >= PIXEL_TIMEOUT) {
+				ctx.fillStyle = PIXEL_BG;
+				ctx.fillRect(x, y, PIXEL_SIZE, PIXEL_SIZE);
+				this.activePixels.delete(px);
+			} else {
+				const base = PIXEL_COLORS[px.color] || PIXEL_COLORS.yellow;
+				const fadeStart = PIXEL_TIMEOUT - PIXEL_FADE_MS;
+				ctx.fillStyle = age > fadeStart ? lerpColor(base, PIXEL_BG, (age - fadeStart) / PIXEL_FADE_MS) : base;
+				ctx.fillRect(x, y, PIXEL_SIZE, PIXEL_SIZE);
+				if (px.error) {
+					ctx.strokeStyle = PIXEL_ERROR_COLOR;
+					ctx.lineWidth = 3;
+					ctx.strokeRect(x + 1.5, y + 1.5, PIXEL_SIZE - 3, PIXEL_SIZE - 3);
+				}
 			}
 		}
-	}
-}
-
-class Pixel {
-	constructor(row, col) {
-		this.row = row;
-		this.col = col;
-		const container = document.createElement("div");
-		container.className = "pixel";
-		container.id = `pixel--${row},${col}`;
-		this.container = container;
-	}
-
-	genClassName(color) {
-		return `pixel__${color || 'on'}`;
-	}
-
-	dim(color) {
-		this.container.classList.remove(this.genClassName(color));
-		this.container.classList.remove('pixel--error');
-	}
-
-	light(color, error, ms) {
-		setTimeout(() => this.dim(color), ms);
-		const className = this.genClassName(color);
-		this.container.className = '';
-		this.container.classList.add('pixel');
-		this.container.classList.add(className);
-		if (error) {
-			this.container.classList.add('pixel--error');
-		}
+		requestAnimationFrame(this.draw.bind(this));
 	}
 }
 
@@ -290,8 +311,18 @@ class Graph {
 		this.container = document.getElementById("graph");
 		this.buckets = [];
 		this.liveBar = null;
+		this.liveDirty = false;
 		this.resize(c);
+		requestAnimationFrame(this.rafLoop.bind(this));
 		setInterval(this.tick.bind(this), BUCKET_SECONDS * 1000)
+	}
+
+	rafLoop() {
+		if (this.liveDirty) {
+			this.updateLiveBar();
+			this.liveDirty = false;
+		}
+		requestAnimationFrame(this.rafLoop.bind(this));
 	}
 
 	record(color, error) {
@@ -300,7 +331,7 @@ class Graph {
 			return;
 		}
 		curBucket.drip(color, error);
-		this.updateLiveBar();
+		this.liveDirty = true;
 	} 
 
 	resize(col) {
@@ -390,4 +421,8 @@ class Bucket {
 
 const app = new App();
 app.toggle();
-window.addEventListener("resize", app.resize.bind(app));
+let resizeTimer;
+window.addEventListener("resize", () => {
+	clearTimeout(resizeTimer);
+	resizeTimer = setTimeout(() => app.resize(), 100);
+});
