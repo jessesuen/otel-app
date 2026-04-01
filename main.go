@@ -16,6 +16,10 @@ import (
 	"strings"
 	"syscall"
 	"time"
+
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 const (
@@ -41,6 +45,29 @@ var (
 	envLatency   float64
 	envErrorRate int
 )
+
+var (
+	httpRequestsTotal = promauto.NewCounterVec(prometheus.CounterOpts{
+		Name: "http_requests_total",
+		Help: "Total HTTP requests by handler and status code",
+	}, []string{"handler", "code"})
+
+	httpRequestDuration = promauto.NewHistogramVec(prometheus.HistogramOpts{
+		Name:    "http_request_duration_seconds",
+		Help:    "HTTP request duration in seconds",
+		Buckets: []float64{.05, .1, .25, .5, 1, 1.5, 2, 2.5, 3},
+	}, []string{"handler", "code"})
+)
+
+func instrumentHandler(name string, h http.Handler) http.Handler {
+	return promhttp.InstrumentHandlerDuration(
+		httpRequestDuration.MustCurryWith(prometheus.Labels{"handler": name}),
+		promhttp.InstrumentHandlerCounter(
+			httpRequestsTotal.MustCurryWith(prometheus.Labels{"handler": name}),
+			h,
+		),
+	)
+}
 
 // readFileOrEnv returns the value of the environment variable if set,
 // otherwise reads the value from a file at the root directory with the same name.
@@ -90,7 +117,11 @@ func main() {
 
 	router := http.NewServeMux()
 	router.Handle("/", http.StripPrefix("/", http.FileServer(http.Dir("./"))))
-	router.HandleFunc("/color", getColor)
+	router.Handle("/color", instrumentHandler("color", http.HandlerFunc(getColor)))
+	router.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	})
+	router.Handle("/metrics", promhttp.Handler())
 
 	server := &http.Server{
 		Addr:    listenAddr,
