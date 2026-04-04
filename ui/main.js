@@ -437,6 +437,13 @@ class Bucket {
 const app = new App();
 app.toggle();
 let resizeTimer;
+window.addEventListener("keydown", (e) => {
+	if (e.code === 'Space' && e.target === document.body) {
+		e.preventDefault();
+		app.toggleInput.checked = !app.toggleInput.checked;
+		app.toggle();
+	}
+});
 window.addEventListener("resize", () => {
 	clearTimeout(resizeTimer);
 	resizeTimer = setTimeout(() => app.resize(), 100);
