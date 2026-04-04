@@ -23,6 +23,8 @@ const PIXEL_COLORS = {
 const PIXEL_BG = '#272727';
 const PIXEL_ERROR_COLOR = '#9c0303';
 const PIXEL_FADE_MS = 500;
+const PIXEL_SHAKE_MS = 600;
+const PIXEL_SHAKE_AMPLITUDE = 3;
 
 function lerpColor(a, b, t) {
 	const ar = parseInt(a.slice(1, 3), 16), ag = parseInt(a.slice(3, 5), 16), ab = parseInt(a.slice(5, 7), 16);
@@ -293,13 +295,26 @@ class Grid {
 			} else {
 				const base = PIXEL_COLORS[px.color] || PIXEL_COLORS.yellow;
 				const fadeStart = PIXEL_TIMEOUT - PIXEL_FADE_MS;
-				ctx.fillStyle = age > fadeStart ? lerpColor(base, PIXEL_BG, (age - fadeStart) / PIXEL_FADE_MS) : base;
+				const pixelColor = age > fadeStart ? lerpColor(base, PIXEL_BG, (age - fadeStart) / PIXEL_FADE_MS) : base;
+				let offsetX = 0;
+				if (px.error && age < PIXEL_SHAKE_MS) {
+					const t = age / PIXEL_SHAKE_MS;
+					offsetX = Math.round(Math.sin(age * 0.05) * PIXEL_SHAKE_AMPLITUDE * (1 - t));
+				}
+				ctx.save();
+				ctx.beginPath();
+				ctx.rect(x, y, PIXEL_SIZE, PIXEL_SIZE);
+				ctx.clip();
+				ctx.fillStyle = PIXEL_BG;
 				ctx.fillRect(x, y, PIXEL_SIZE, PIXEL_SIZE);
+				ctx.fillStyle = pixelColor;
+				ctx.fillRect(x + offsetX, y, PIXEL_SIZE, PIXEL_SIZE);
 				if (px.error) {
 					ctx.strokeStyle = PIXEL_ERROR_COLOR;
 					ctx.lineWidth = 3;
-					ctx.strokeRect(x + 1.5, y + 1.5, PIXEL_SIZE - 3, PIXEL_SIZE - 3);
+					ctx.strokeRect(x + offsetX + 1.5, y + 1.5, PIXEL_SIZE - 3, PIXEL_SIZE - 3);
 				}
+				ctx.restore();
 			}
 		}
 		requestAnimationFrame(this.draw.bind(this));
